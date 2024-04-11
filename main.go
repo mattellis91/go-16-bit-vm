@@ -30,9 +30,11 @@ func NewCPU(registerNames []string, mem []byte) *CPU {
 	}
 }
 
-func GetRegister(cpu *CPU, name string) uint {
-	//TODO: get value (2 bytes) from memory based on the register name
-	return 0
+func GetRegister(cpu *CPU, name string) uint16 {
+	if val, ok := cpu.registerMap[name]; ok {
+		return uint16(cpu.registers[val]) << 8 | uint16(cpu.registers[val + 1])
+	}
+	panic("Register not found");
 }
 
 
