@@ -1,46 +1,45 @@
 package main
 
 import (
-	"fmt"
+	_ "fmt"
 )
 
 func CreateMemory(size int) []byte {
 	return make([]byte, size)
 }
 
-type CPU struct {
-	mem []byte 
-	registerNames []string
-	registers []byte
-	registerMap map[string]uint
-}
-
-func NewCPU(registerNames []string, mem []byte) *CPU {
-
-	rm := make(map[string]uint)
-	for i, name := range registerNames {
-		rm[name] = uint(i) * 2
-	}
-
-	return &CPU{
-		mem: mem,
-		registerNames: registerNames,
-		registers: make([]byte, len(registerNames) * 2),
-		registerMap: rm,
-	}
-}
-
-func GetRegister(cpu *CPU, name string) uint16 {
-	if val, ok := cpu.registerMap[name]; ok {
-		return uint16(cpu.registers[val]) << 8 | uint16(cpu.registers[val + 1])
-	}
-	panic("Register not found");
-}
-
-
 func main() {
 	cpu := NewCPU([]string{
 		"ip", "acc", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",
-	}, CreateMemory(1024))
-	fmt.Printf("%v\n", cpu)
+	}, CreateMemory(256))
+
+	cpu.mem[0] = MOV_LIT_R1
+	cpu.mem[1] = 0x12
+	cpu.mem[2] = 0x34
+
+	cpu.mem[3] = MOV_LIT_R2
+	cpu.mem[4] = 0xab
+	cpu.mem[5] = 0xcd
+
+	cpu.mem[6] = ADD_REG_REG
+	cpu.mem[7] = 2 //index of r1 register
+	cpu.mem[8] = 3 //index of r2 register
+
+	// fmt.Printf("%x", cpu.GetRegister("ip"))
+
+	cpu.Debug()
+
+	cpu.step()
+
+	cpu.step()
+
+	cpu.Debug()
+
+	cpu.step()
+
+	cpu.Debug()
+
+	cpu.step()
+
+	cpu.Debug()
 }
