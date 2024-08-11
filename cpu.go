@@ -67,8 +67,8 @@ func (cpu *CPU) execute(instruction byte) {
 		case ADD_REG_REG: //ADD register to register
 			regA := cpu.fetch()
 			regB := cpu.fetch() 
-			regAValue := BytesTo16Bit(cpu.registers[regA * 2], cpu.registers[(regA * 2) + 1])
-			regBValue := BytesTo16Bit(cpu.registers[regB * 2], cpu.registers[(regB * 2) + 1])
+			regAValue := BytesToUint16(cpu.registers[regA * 2], cpu.registers[(regA * 2) + 1])
+			regBValue := BytesToUint16(cpu.registers[regB * 2], cpu.registers[(regB * 2) + 1])
 			cpu.SetRegister("acc", regAValue + regBValue)
 	}
 }
@@ -84,7 +84,7 @@ func Uint16ToBytes(value uint16) []byte {
 	return b
 }
 
-func BytesTo16Bit(b1 byte, b2 byte) uint16 {
+func BytesToUint16(b1 byte, b2 byte) uint16 {
 	return uint16(b1) << 8 | uint16(b2)
 }
 
