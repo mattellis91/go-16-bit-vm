@@ -11,9 +11,9 @@ func CreateMemory(size int) []byte {
 func main() {
 	cpu := NewCPU([]string{
 		"ip", "acc", "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",
-	}, CreateMemory(256))
+	}, CreateMemory(256 *))
 
-	cpu.mem[0] = MOV_LIT_R1
+	cpu.mem[0] = MOV_LIT_REG
 	cpu.mem[1] = 0x12
 	cpu.mem[2] = 0x34
 
@@ -27,19 +27,19 @@ func main() {
 
 	// fmt.Printf("%x", cpu.GetRegister("ip"))
 
-	cpu.Debug()
+	cpu.PrintRegisters()
 
 	cpu.step()
 
 	cpu.step()
 
-	cpu.Debug()
+	cpu.PrintRegisters()
 
 	cpu.step()
 
-	cpu.Debug()
+	cpu.PrintRegisters()
 
 	cpu.step()
 
-	cpu.Debug()
+	cpu.PrintRegisters()
 }
