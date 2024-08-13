@@ -83,31 +83,42 @@ func (cpu *CPU) readRegisterOffset() int {
 
 func (cpu *CPU) execute(instruction byte) {
 	switch(instruction) {
-		case MOV_LIT_REG: //MOVE literal value into register
+		case MOV_LIT_REG:
 			literal := cpu.fetch16()		
 			regOffset := cpu.readRegisterOffset()
 			cpu.SetRegisterByOffset(regOffset, literal)
-		case MOV_REG_REG: //MOVE value from register to register
+
+		case MOV_REG_REG: 
 			regOffsetFrom := cpu.readRegisterOffset()
 			regOffSetTo := cpu.readRegisterOffset()
 			value := BytesToUint16(cpu.registers[regOffsetFrom], cpu.registers[regOffsetFrom + 1])
 			cpu.SetRegisterByOffset(regOffSetTo, value)
-		case MOV_REG_MEM: //MOVE register to memory
+			
+		case MOV_REG_MEM:
 			regOffsetFrom := cpu.readRegisterOffset()
 			address := cpu.fetch16()
 			value := BytesToUint16(cpu.registers[regOffsetFrom], cpu.registers[regOffsetFrom + 1])
 			cpu.SetMemoryAtAddress(int(address), value)
-		case MOV_MEM_REG: //MOVE memory to register
+			
+		case MOV_MEM_REG: 
 			address := cpu.fetch16()
 			regOffsetTo := cpu.readRegisterOffset()
 			value := BytesToUint16(cpu.mem[address], cpu.mem[address + 1])
 			cpu.SetRegisterByOffset(regOffsetTo, value)
-		case ADD_REG_REG: //ADD register to register
+
+		case ADD_REG_REG:
 			regA := cpu.fetch()
 			regB := cpu.fetch() 
 			regAValue := BytesToUint16(cpu.registers[regA * 2], cpu.registers[(regA * 2) + 1])
 			regBValue := BytesToUint16(cpu.registers[regB * 2], cpu.registers[(regB * 2) + 1])
 			cpu.SetRegisterByName("acc", regAValue + regBValue)
+
+		case JMP_NOT_EQU:
+			value := cpu.fetch16()
+			address := cpu.fetch16()
+			if value != cpu.GetRegister("acc") {
+				cpu.SetRegisterByName("ip", address)
+			}
 	}
 }		
 
