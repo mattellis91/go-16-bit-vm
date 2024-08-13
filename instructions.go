@@ -7,3 +7,16 @@ const (
 	MOV_MEM_REG byte = 0x13
 	ADD_REG_REG byte = 0x14
 )
+
+const (
+	IP byte = iota
+	ACC
+	R1
+	R2
+	R3
+	R4
+	R5
+	R6
+	R7
+	R8
+)

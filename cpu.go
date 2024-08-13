@@ -45,22 +45,23 @@ func (cpu *CPU) SetRegisterByName(name string, value uint16) {
 }
 
 func (cpu *CPU) SetRegisterByOffset(offset int, value uint16) {
-	if(offset < 0 || offset >= len(cpu.registers)) {
+	if offset < 0 || offset >= len(cpu.registers) {
+		panic(fmt.Sprintf("Register offset out of bounds %d", offset))
+	} else {
 		b := Uint16ToBytes(value)
 		cpu.registers[offset] = b[0]
 		cpu.registers[offset + 1] = b[1]
-	} else {
-		panic(fmt.Sprintf("Register offset out of bounds %d", offset))
+
 	}
 }
 
 func (cpu *CPU) SetMemoryAtAddress(offset int, value uint16) {
-	if(offset < 0 || offset >- len(cpu.mem)) {
+	if offset < 0 || offset >= len(cpu.mem) {
+		panic(fmt.Sprintf("Memory offset out of bounds %d", offset))
+	} else {
 		b := Uint16ToBytes(value)
 		cpu.mem[offset] = b[0]
 		cpu.mem[offset + 1] = b[1]
-	} else {
-		panic(fmt.Sprintf("Memory offset out of bounds %d", offset))
 	}
 }
 
@@ -133,5 +134,11 @@ func (cpu *CPU) PrintRegisters() {
 }
 
 func (cpu *CPU) PrintMemoryAt(address uint16) {
-	nextEightBytes := cpu.mem[address:address + 8]
+	nextEightBytes := cpu.mem[address:address + 8] 
+	valString := fmt.Sprintf("%x: ", address)
+	for _, value := range nextEightBytes {
+		valString += fmt.Sprintf("%x ", value)
+	}
+	valString += "\n"
+	fmt.Print(valString)
 }
