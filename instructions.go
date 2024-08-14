@@ -1,12 +1,15 @@
 package main
 
 const (
-	MOV_LIT_REG byte = 0x10 //Move literal value to register
+	MOV_LIT_REG byte = 0x10 //Move literal value to register 
 	MOV_REG_REG byte = 0x11 //Move register value to another register
 	MOV_REG_MEM byte = 0x12 //Move register value to memory address
 	MOV_MEM_REG byte = 0x13 //Move from value from memory address into register
 	ADD_REG_REG byte = 0x14 //Add two registers and store result in accumulator register
 	JMP_NOT_EQU byte = 0x15 //Jump if not equal.
+	PSH_LIT     byte = 0x16 //Push literal value to stack
+	PSH_REG     byte = 0x17 //Push register to stack
+	POP     byte = 0x18 //Pop stack to register
 )
 
 const (
@@ -20,4 +23,6 @@ const (
 	R6
 	R7
 	R8
+	SP
+	FP
 )
