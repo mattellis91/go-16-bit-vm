@@ -10,6 +10,7 @@ type CPU struct {
 	registerNames []string
 	registers []byte
 	registerMap map[string]uint
+	stackFrameSize uint
 }
 
 func NewCPU(registerNames []string, mem []byte) *CPU {
@@ -136,8 +137,24 @@ func (cpu *CPU) execute(instruction byte) {
 
 		case POP:
 			regOffsetTo := cpu.readRegisterOffset()
-			cpu.pop(regOffsetTo)
-			
+			value := cpu.pop()
+			cpu.SetRegisterByOffset(regOffsetTo, value) 
+
+		case CAL_LIT:
+			address := cpu.fetch16()
+			cpu.pushState()
+			cpu.SetRegisterByName("ip", address)
+
+		case CAL_REG:
+			registerOffset := cpu.readRegisterOffset()
+			address := BytesToUint16(cpu.registers[registerOffset], cpu.registers[registerOffset + 1])
+			cpu.pushState()
+			cpu.SetRegisterByName("ip", address)
+
+		case RET:
+			cpu.popState()
+			return
+
 	}
 }		
 
@@ -146,19 +163,63 @@ func (cpu *CPU) step() {
 	cpu.execute(instruction)
 }
 
+func (cpu *CPU) pushState() {
+	cpu.push(cpu.GetRegister("r1"))
+	cpu.push(cpu.GetRegister("r2"))
+	cpu.push(cpu.GetRegister("r3"))
+	cpu.push(cpu.GetRegister("r4"))
+	cpu.push(cpu.GetRegister("r5"))
+	cpu.push(cpu.GetRegister("r6"))
+	cpu.push(cpu.GetRegister("r7"))
+	cpu.push(cpu.GetRegister("r8"))
+	cpu.push(cpu.GetRegister("ip"))			
+	cpu.push(uint16(cpu.stackFrameSize + 2))
+
+	cpu.SetRegisterByName("fp", cpu.GetRegister("sp"))
+	cpu.stackFrameSize = 0
+}
+
+func (cpu *CPU) popState() {
+	fpAddress := cpu.GetRegister("fp")
+	cpu.SetRegisterByName("sp", fpAddress)
+
+	stackFrameSize := cpu.pop()
+	cpu.stackFrameSize = uint(stackFrameSize)
+
+	cpu.SetRegisterByName("ip", cpu.pop())
+	cpu.SetRegisterByName("r8", cpu.pop())
+	cpu.SetRegisterByName("r7", cpu.pop())
+	cpu.SetRegisterByName("r6", cpu.pop())
+	cpu.SetRegisterByName("r5", cpu.pop())
+	cpu.SetRegisterByName("r4", cpu.pop())
+	cpu.SetRegisterByName("r3", cpu.pop())
+	cpu.SetRegisterByName("r2", cpu.pop())
+	cpu.SetRegisterByName("r1", cpu.pop())
+
+	nArgs := int(cpu.pop())
+	for i :=  0; i < nArgs; i++ {
+		cpu.pop()
+	}
+
+	cpu.SetRegisterByName("fp", fpAddress + stackFrameSize)
+
+}
+
 func (cpu *CPU) push(value uint16) {
 	spAddress := cpu.GetRegister("sp")
 	b := Uint16ToBytes(value)
 	cpu.mem[spAddress] = b[0]
 	cpu.mem[spAddress + 1] = b[1]
 	cpu.SetRegisterByName("sp", spAddress - 2)
+	cpu.stackFrameSize = cpu.stackFrameSize + 2
 }
 
-func (cpu *CPU) pop(registerOffset int) {
+func (cpu *CPU) pop() uint16 {
 	nextSpAddress := cpu.GetRegister("sp") + 2
 	cpu.SetRegisterByName("sp", nextSpAddress)
 	value := BytesToUint16(cpu.mem[nextSpAddress], cpu.mem[nextSpAddress + 1])
-	cpu.SetRegisterByOffset(registerOffset, value) 
+	cpu.stackFrameSize = cpu.stackFrameSize - 2
+	return value 
 }
 
 func Uint16ToBytes(value uint16) []byte {
@@ -178,12 +239,12 @@ func (cpu *CPU) PrintRegisters() {
 	fmt.Printf("\n\n")
 }
 
-func (cpu *CPU) PrintMemoryAt(address uint16) {
+func (cpu *CPU) PrintMemoryAt(address uint16, n int) {
 	var nextEightBytes []byte
-	if int(address) + 8 >= len(cpu.mem) - 1 {
+	if int(address) + n >= len(cpu.mem) - 1 {
 		nextEightBytes = cpu.mem[address:]
 	} else {
-		nextEightBytes = cpu.mem[address:address + 8]	
+		nextEightBytes = cpu.mem[address:address + uint16(n)]	
 	} 
 	valString := fmt.Sprintf("%x: ", address)
 	for _, value := range nextEightBytes {
